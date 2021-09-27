@@ -19,8 +19,10 @@ public class BodyController : MonoBehaviourPunCallbacks, IPunObservable
     public float direction = 0;
 
     public float health = 1.0f;
+    public float size = 1.0f;
 
     public event EventHandler BodyReleased;
+    public event EventHandler<float> FoodEaten;
 
     // Start is called before the first frame update
     void Start()
@@ -64,7 +66,14 @@ public class BodyController : MonoBehaviourPunCallbacks, IPunObservable
 
     void OnTriggerEnter(Collider col)
     {
+        //Debug.Log($"{photonView.IsMine}, {col.gameObject.name}");
+        if(photonView.IsMine && col.gameObject.name.Contains("SimpleFood"))
+        {
+            var foodValue = col.gameObject.GetComponent<FoodScript>().foodValue;
+            SetHealth(health + foodValue);
 
+            FoodEaten?.Invoke(this, foodValue);
+        }
     }
 
     public bool GetFocus() { return focused; }
@@ -78,11 +87,22 @@ public class BodyController : MonoBehaviourPunCallbacks, IPunObservable
             this.arrorCenterGameObject.SetActive(true);
             //this.direction = 0;
             this.accel = 0;
+            arrorCenterGameObject.transform.localScale = new Vector3(1, 1, 1);
         }
         else
         {
             this.arrorCenterGameObject.SetActive(false);
         }
+    }
+
+    public void SetHealth(float health)
+    {
+        this.health = health;
+
+        size = Mathf.Pow(Math.Max(0, this.health), 0.333333f);
+
+        transform.localScale = new Vector3(size, size, size);
+        this.gameObject.GetComponent<Rigidbody>().mass = size;
     }
 
     public void OnPhotonSerializeView(PhotonStream stream, PhotonMessageInfo info)
@@ -93,7 +113,11 @@ public class BodyController : MonoBehaviourPunCallbacks, IPunObservable
         }
         else
         {
-            health = (float)stream.ReceiveNext();
+            var health = (float)stream.ReceiveNext();
+            if(this.health != health)
+            {
+                SetHealth(health);
+            }
         }
     }
 }

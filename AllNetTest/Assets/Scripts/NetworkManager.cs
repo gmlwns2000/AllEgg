@@ -11,6 +11,11 @@ public class NetworkManager : MonoBehaviourPunCallbacks
 {
     public static readonly string GAME_VERSION = "1";
 
+    public GameObject cameraObject;
+    public GameObject scoreTextboxObject;
+
+    public GameObject playerPrefab;
+
     void Start()
     {
         Connect();
@@ -18,7 +23,8 @@ public class NetworkManager : MonoBehaviourPunCallbacks
 
     public void Connect()
     {
-        PhotonNetwork.NickName = "AinL";
+        var names = new[] { "AinL", "boerk", "Hello", "World", "Wow", "Test", "HelloWorld", "Joe", "Foo", "Bar", "foobar", "ASCII"};
+        PhotonNetwork.NickName = names[UnityEngine.Random.Range(0, names.Length)];
         if (PhotonNetwork.IsConnected)
         {
             PhotonNetwork.JoinRandomRoom();
@@ -46,13 +52,21 @@ public class NetworkManager : MonoBehaviourPunCallbacks
         Debug.Log("PUN Basics Tutorial/Launcher:OnJoinRandomFailed() was called by PUN. No random room available, so we create one.\nCalling: PhotonNetwork.CreateRoom");
 
         // #Critical: we failed to join a random room, maybe none exists or they are all full. No worries, we create a new room.
-        PhotonNetwork.CreateRoom(null, new RoomOptions { MaxPlayers = 4 });
+        PhotonNetwork.CreateRoom(null, new RoomOptions { MaxPlayers = 20 });
     }
 
     public override void OnJoinedRoom()
     {
         Debug.Log("PUN Basics Tutorial/Launcher: OnJoinedRoom() called by PUN. Now this client is in a room.");
         Debug.Log($"IsMaster:{PhotonNetwork.IsMasterClient}, PlayerCount:{PhotonNetwork.CurrentRoom.PlayerCount}");
+
+        var player = PhotonNetwork.Instantiate(playerPrefab.name, new Vector3(0, 0, 0), Quaternion.identity);
+        if (player != null)
+        {
+            var manager = player.GetComponent<GameManager>();
+            manager.cameraObject = cameraObject;
+            manager.scoreTextboxObject = scoreTextboxObject;
+        }
     }
 
     public override void OnPlayerEnteredRoom(Player other)

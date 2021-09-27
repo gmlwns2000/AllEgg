@@ -10,13 +10,17 @@ using Random = UnityEngine.Random;
 public class FoodScript : MonoBehaviourPunCallbacks, IPunObservable
 {
     Color color;
+
     public GameObject sphere;
+    public float foodValue;
+
     public event EventHandler OnPlayerCollide;
 
     // Start is called before the first frame update
     void Start()
     {
         this.SetColor(Random.ColorHSV());
+        foodValue = Random.Range(0.05f, 0.2f);
     }
 
     // Update is called once per frame
@@ -27,9 +31,17 @@ public class FoodScript : MonoBehaviourPunCallbacks, IPunObservable
 
     void OnTriggerEnter(Collider col)
     {
-        if(PhotonNetwork.IsMasterClient && col.gameObject.tag == "Player")
+        if(photonView.IsMine && col.gameObject.tag == "Player")
         {
             OnPlayerCollide?.Invoke(this, null);
+        }
+    }
+    void SetColor(Color value)
+    {
+        if(color != value)
+        {
+            color = value;
+            this.sphere.GetComponent<MeshRenderer>().material.color = color;
         }
     }
 
@@ -38,20 +50,14 @@ public class FoodScript : MonoBehaviourPunCallbacks, IPunObservable
         if(stream.IsWriting)
         {
             stream.SendNext(new Vector3(color.r, color.g, color.b));
+            stream.SendNext(foodValue);
         }
         else
         {
             var vec = (Vector3)stream.ReceiveNext();
+            var food = (float)stream.ReceiveNext();
+            this.foodValue = food;
             SetColor(new Color(vec.x, vec.y, vec.z));
-        }
-    }
-
-    void SetColor(Color value)
-    {
-        if(color != value)
-        {
-            color = value;
-            this.sphere.GetComponent<MeshRenderer>().material.color = color;
         }
     }
 }
