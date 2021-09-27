@@ -64,8 +64,10 @@ public class NetworkManager : MonoBehaviourPunCallbacks
         if (player != null)
         {
             var manager = player.GetComponent<GameManager>();
-            manager.cameraObject = cameraObject;
             manager.scoreTextboxObject = scoreTextboxObject;
+
+            var cameraWork = player.GetComponent<CameraFollowing>();
+            cameraWork.cameraObject = cameraObject;
         }
     }
 

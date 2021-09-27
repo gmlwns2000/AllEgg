@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 532843922490911682}
   - component: {fileID: 4942750201537402926}
   - component: {fileID: 4587601240120934239}
+  - component: {fileID: 7812158121596184870}
   m_Layer: 0
   m_Name: Player
   m_TagString: Untagged
@@ -47,9 +48,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   myBodies: []
   currentBodyIdx: 0
-  cameraObject: {fileID: 0}
   scoreTextboxObject: {fileID: 0}
-  playerPrefab: {fileID: 5959276772647891662, guid: 2408407543810ff4fa6f7e27b4ccbfc4,
+  playerBodyPrefab: {fileID: 5959276772647891662, guid: 2408407543810ff4fa6f7e27b4ccbfc4,
     type: 3}
   foodPrefab: {fileID: 5911174338115924591, guid: 3820bec987dc5304bb02ad79a19fcb52,
     type: 3}
@@ -97,3 +97,18 @@ MonoBehaviour:
   m_SynchronizeRotation: 1
   m_SynchronizeScale: 0
   m_UseLocal: 1
+--- !u!114 &7812158121596184870
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7970457776050004569}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6798a098a8addb9418f606307fe7d1c1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  targetObject: {fileID: 0}
+  cameraObject: {fileID: 0}
+  activeSmoothing: 0

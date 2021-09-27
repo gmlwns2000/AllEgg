@@ -6,11 +6,27 @@ using Photon;
 using Photon.Pun;
 using Photon.Realtime;
 
+public class BodySplitEventArgs : EventArgs
+{
+    public Vector3 position;
+    public Quaternion rotation;
+    public float health;
+
+    public BodySplitEventArgs(Vector3 pos, Quaternion rot, float health)
+    {
+        position = pos;
+        rotation = rot;
+        this.health = health;
+    }
+}
+
 public class BodyController : MonoBehaviourPunCallbacks, IPunObservable
 {
     bool focused = false;
 
     public GameObject arrorCenterGameObject;
+    public GameObject nicknameTextGameObject;
+
     public float accelPerSec = 800;
     public float rotatePerSec = 100;
     public float maxAccel = 2000;
@@ -20,8 +36,10 @@ public class BodyController : MonoBehaviourPunCallbacks, IPunObservable
 
     public float health = 1.0f;
     public float size = 1.0f;
+    public float splitableHealthThreshold = 2.0f;
 
     public event EventHandler BodyReleased;
+    public event EventHandler<BodySplitEventArgs> BodySplitRequested;
     public event EventHandler<float> FoodEaten;
 
     // Start is called before the first frame update
@@ -33,7 +51,11 @@ public class BodyController : MonoBehaviourPunCallbacks, IPunObservable
     // Update is called once per frame
     void Update()
     {
-        if (!focused) return;
+        //always
+        nicknameTextGameObject.GetComponent<TextMesh>().text = photonView.Owner.NickName;
+
+        // run update if only and if focused or object is mine.
+        if (!focused || !photonView.IsMine) return;
 
         //update direction
         var dirUpdated = false;
@@ -61,6 +83,15 @@ public class BodyController : MonoBehaviourPunCallbacks, IPunObservable
             );
 
             BodyReleased?.Invoke(this, EventArgs.Empty);
+        }
+
+        //split body
+        if((Input.GetKeyDown(KeyCode.A) || Input.GetKeyDown(KeyCode.D)) && (Input.GetKey(KeyCode.A) && Input.GetKey(KeyCode.D)) && (this.health >= this.splitableHealthThreshold))
+        {
+            //call GameManager to add new body.
+            var health = this.health / 2f;
+            SetHealth(health);
+            BodySplitRequested?.Invoke(this, new BodySplitEventArgs(this.transform.position, this.transform.rotation, health));
         }
     }
 

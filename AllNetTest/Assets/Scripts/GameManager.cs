@@ -12,10 +12,9 @@ public class GameManager : MonoBehaviourPunCallbacks, IPunObservable
     public List<GameObject> myBodies;
     public int currentBodyIdx = 0;
 
-    public GameObject cameraObject;
     public GameObject scoreTextboxObject;
 
-    public GameObject playerPrefab;
+    public GameObject playerBodyPrefab;
     public GameObject foodPrefab;
 
     public float foodCreateInterval = 0.5f;
@@ -30,7 +29,7 @@ public class GameManager : MonoBehaviourPunCallbacks, IPunObservable
     {
         if (photonView.IsMine)
         {
-            var me = PhotonNetwork.Instantiate(playerPrefab.name, new Vector3(0, 0.505f, 0), Quaternion.identity);
+            var me = PhotonNetwork.Instantiate(playerBodyPrefab.name, new Vector3(0, 0.505f, 0), Quaternion.identity);
             if (me == null) throw new NullReferenceException();
             myBodies.Add(me);
 
@@ -39,8 +38,29 @@ public class GameManager : MonoBehaviourPunCallbacks, IPunObservable
                 var controller = item.GetComponent<BodyController>();
                 controller.BodyReleased += Controller_BodyReleased;
                 controller.FoodEaten += Controller_FoodEaten;
+                controller.BodySplitRequested += Controller_BodySplitRequested;
             }
+
+            currentBodyIdx = -1;
+            SetCurrentBodyIdx(0);
         }
+    }
+
+    //Following controller event calls only from local object.
+    private void Controller_BodySplitRequested(object sender, BodySplitEventArgs e)
+    {
+        var body = PhotonNetwork.Instantiate(playerBodyPrefab.name, e.position, e.rotation);
+        if (body == null) throw new NullReferenceException();
+        var controller = body.GetComponent<BodyController>();
+        controller.BodyReleased += Controller_BodyReleased;
+        controller.FoodEaten += Controller_FoodEaten;
+        controller.BodySplitRequested += Controller_BodySplitRequested;
+        controller.SetHealth(e.health);
+
+        //move focus to new body
+        if (myBodies.Count > 0) myBodies[currentBodyIdx].GetComponent<BodyController>().SetFocus(false);
+        myBodies.Add(body);
+        SetCurrentBodyIdx(myBodies.Count - 1);
     }
 
     void Controller_FoodEaten(object sender, float e)
@@ -50,7 +70,7 @@ public class GameManager : MonoBehaviourPunCallbacks, IPunObservable
 
     void Controller_BodyReleased(object sender, EventArgs args)
     {
-        currentBodyIdx = (currentBodyIdx + 1) % myBodies.Count;
+        SetCurrentBodyIdx((currentBodyIdx + 1) % myBodies.Count);
     }
 
     // Update is called once per frame
@@ -58,21 +78,16 @@ public class GameManager : MonoBehaviourPunCallbacks, IPunObservable
     {
         if (!photonView.IsMine) return;
 
+        //manage bodies
         if (myBodies.Count > 0)
         {
+            //set focus (activate inputs)
             var me = myBodies[currentBodyIdx];
             var controller = me.GetComponent<BodyController>();
             if (!controller.GetFocus()) { controller.SetFocus(true); }
-
-            if (cameraObject != null)
-            {
-                var cameraPos = cameraObject.transform.position;
-                var mePos = me.transform.position;
-
-                cameraObject.transform.position = new Vector3(mePos.x, cameraPos.y, mePos.z);
-            }
         }
 
+        //food timer
         foodCreateTimeElapsed -= Time.deltaTime;
         if (foodCreateTimeElapsed < 0)
         {
@@ -100,6 +115,21 @@ public class GameManager : MonoBehaviourPunCallbacks, IPunObservable
         {
             this.score = score;
             if(scoreTextboxObject) this.scoreTextboxObject.GetComponent<UnityEngine.UI.Text>().text = $"Score: {(int)score}";
+        }
+    }
+
+    public void SetCurrentBodyIdx(int idx)
+    {
+        if (currentBodyIdx != idx)
+        {
+            currentBodyIdx = idx;
+
+            if (idx >= 0 && idx < myBodies.Count)
+            {
+                var cameraWork = GetComponent<CameraFollowing>();
+                cameraWork.targetObject = myBodies[idx];
+                cameraWork.activeSmoothing = true;
+            }
         }
     }
 
