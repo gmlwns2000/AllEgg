@@ -116,14 +116,14 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   arrorCenterGameObject: {fileID: 7904763328928757361}
   nicknameTextGameObject: {fileID: 7775670288862231465}
-  accelPerSec: 1200
+  accelPerSec: 1800
   rotatePerSec: 250
-  maxAccel: 2000
+  maxAccel: 4000
   accel: 0
   direction: 0
   health: 1
   size: 1
-  splitableHealthThreshold: 3
+  splitableHealthThreshold: 2
 --- !u!54 &7904763328923688592
 Rigidbody:
   m_ObjectHideFlags: 0

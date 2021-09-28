@@ -16,6 +16,8 @@ public class NetworkManager : MonoBehaviourPunCallbacks
 
     public GameObject playerPrefab;
 
+    public bool alwaysCreateRoom = false;
+
     void Start()
     {
         Connect();
@@ -27,7 +29,7 @@ public class NetworkManager : MonoBehaviourPunCallbacks
         PhotonNetwork.NickName = names[UnityEngine.Random.Range(0, names.Length)];
         if (PhotonNetwork.IsConnected)
         {
-            PhotonNetwork.JoinRandomRoom();
+            JoinRandomRoom();
         }
         else
         {
@@ -36,10 +38,22 @@ public class NetworkManager : MonoBehaviourPunCallbacks
         }
     }
 
+    void JoinRandomRoom()
+    {
+        if (alwaysCreateRoom)
+        {
+            PhotonNetwork.CreateRoom(null, new RoomOptions { MaxPlayers = 20 });
+        }
+        else
+        {
+            PhotonNetwork.JoinRandomRoom();
+        }
+    }
+
     public override void OnConnectedToMaster()
     {
         Debug.Log("PUN Basics Tutorial/Launcher: OnConnectedToMaster() was called by PUN");
-        PhotonNetwork.JoinRandomRoom();
+        JoinRandomRoom();
     }
 
     public override void OnDisconnected(DisconnectCause cause)

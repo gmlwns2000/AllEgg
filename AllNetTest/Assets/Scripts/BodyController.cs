@@ -40,7 +40,10 @@ public class BodyController : MonoBehaviourPunCallbacks, IPunObservable
 
     public event EventHandler BodyReleased;
     public event EventHandler<BodySplitEventArgs> BodySplitRequested;
+    public event EventHandler BodyGatherRequested;
     public event EventHandler<float> FoodEaten;
+
+    float blockSplitBodyTimer = 0.0f;
 
     // Start is called before the first frame update
     void Start()
@@ -66,13 +69,28 @@ public class BodyController : MonoBehaviourPunCallbacks, IPunObservable
             this.arrorCenterGameObject.transform.localRotation = Quaternion.Euler(0, direction, 0);
         }
 
+        //gather body
+        if(
+            (Input.GetKeyUp(KeyCode.A) && Input.GetKey(KeyCode.D) && Input.GetKey(KeyCode.W)) || 
+            (Input.GetKeyUp(KeyCode.W) && Input.GetKey(KeyCode.D) && Input.GetKey(KeyCode.A)) ||
+            (Input.GetKeyUp(KeyCode.D) && Input.GetKey(KeyCode.W) && Input.GetKey(KeyCode.A)) ||
+            (Input.GetKeyUp(KeyCode.D) && Input.GetKeyUp(KeyCode.W) && Input.GetKeyUp(KeyCode.A)) ||
+            (Input.GetKeyUp(KeyCode.D) && Input.GetKeyUp(KeyCode.W) && Input.GetKey(KeyCode.A)) ||
+            (Input.GetKeyUp(KeyCode.D) && Input.GetKey(KeyCode.W) && Input.GetKeyUp(KeyCode.A)) ||
+            (Input.GetKey(KeyCode.D) && Input.GetKeyUp(KeyCode.W) && Input.GetKeyUp(KeyCode.A))
+        )
+        {
+            BodyGatherRequested?.Invoke(this, null);
+            blockSplitBodyTimer = 0.15f;
+        }
+
         //handle accel
         if (Input.GetKey(KeyCode.W))
         {
             accel = Math.Min(maxAccel, accel + accelPerSec * Time.deltaTime);
             arrorCenterGameObject.transform.localScale = new Vector3(1, 1, 1 + accel / accelPerSec);
         }
-        else if (Input.GetKeyUp(KeyCode.W))
+        else if (Input.GetKeyUp(KeyCode.W) && (blockSplitBodyTimer < 0))
         {
             this.SetFocus(false);
 
@@ -86,13 +104,19 @@ public class BodyController : MonoBehaviourPunCallbacks, IPunObservable
         }
 
         //split body
-        if((Input.GetKeyDown(KeyCode.A) || Input.GetKeyDown(KeyCode.D)) && (Input.GetKey(KeyCode.A) && Input.GetKey(KeyCode.D)) && (this.health >= this.splitableHealthThreshold))
+        if (
+            ((Input.GetKeyUp(KeyCode.A) && Input.GetKey(KeyCode.D)) || (Input.GetKeyUp(KeyCode.D) && Input.GetKey(KeyCode.A))) &&
+            (this.health >= this.splitableHealthThreshold) &&
+            (blockSplitBodyTimer < 0)
+        )
         {
             //call GameManager to add new body.
             var health = this.health / 2f;
             SetHealth(health);
             BodySplitRequested?.Invoke(this, new BodySplitEventArgs(this.transform.position, this.transform.rotation, health));
         }
+
+        blockSplitBodyTimer -= Time.deltaTime;
     }
 
     void OnTriggerEnter(Collider col)
