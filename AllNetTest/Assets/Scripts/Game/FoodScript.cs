@@ -16,6 +16,15 @@ public class FoodScript : MonoBehaviourPunCallbacks, IPunObservable
 
     public event EventHandler OnPlayerCollide;
 
+    void SetColor(Color value)
+    {
+        if (color != value)
+        {
+            color = value;
+            this.sphere.GetComponent<MeshRenderer>().material.color = color;
+        }
+    }
+
     // Start is called before the first frame update
     void Start()
     {
@@ -34,14 +43,6 @@ public class FoodScript : MonoBehaviourPunCallbacks, IPunObservable
         if(photonView.IsMine && col.gameObject.tag == "Player")
         {
             OnPlayerCollide?.Invoke(this, null);
-        }
-    }
-    void SetColor(Color value)
-    {
-        if(color != value)
-        {
-            color = value;
-            this.sphere.GetComponent<MeshRenderer>().material.color = color;
         }
     }
 

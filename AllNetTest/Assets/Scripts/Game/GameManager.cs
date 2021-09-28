@@ -71,6 +71,8 @@ class BubblePlacer
 
 public class GameManager : MonoBehaviourPunCallbacks, IPunObservable
 {
+    public static List<GameManager> Instances = new List<GameManager>();
+
     // Start is called before the first frame update
     public List<GameObject> myBodies;
     public int currentBodyIdx = 0;
@@ -83,27 +85,61 @@ public class GameManager : MonoBehaviourPunCallbacks, IPunObservable
     public float foodCreateInterval = 0.5f;
     public int maxFoodCount = 1000;
     public int mapRange = 50;
+
     public float score = 0;
 
     int foodCount = 0;
     float foodCreateTimeElapsed = 0;
 
+    public void SetScore(float score)
+    {
+        if (this.score != score)
+        {
+            this.score = score;
+            if (scoreTextboxObject) this.scoreTextboxObject.GetComponent<UnityEngine.UI.Text>().text = $"Score: {(int)score}";
+        }
+    }
+
+    public void SetCurrentBodyIdx(int idx)
+    {
+        if (currentBodyIdx != idx)
+        {
+            currentBodyIdx = idx;
+
+            if (idx >= 0 && idx < myBodies.Count)
+            {
+                var cameraWork = GetComponent<CameraFollowing>();
+                cameraWork.targetObject = myBodies[idx];
+                cameraWork.activeSmoothing = true;
+            }
+        }
+    }
+
     void Start()
     {
         if (photonView.IsMine)
         {
-            var me = PhotonNetwork.Instantiate(playerBodyPrefab.name, new Vector3(0, 0.505f, 0), Quaternion.identity);
-            if (me == null) throw new NullReferenceException();
-            myBodies.Add(me);
-
-            foreach (var item in myBodies)
-            {
-                var controller = InitializeBodyGameObject(item);
-            }
-
-            currentBodyIdx = -1;
-            SetCurrentBodyIdx(0);
+            AddNewBody();
         }
+
+        Instances.Add(this);
+    }
+
+    void OnDestroy()
+    {
+        Instances.Remove(this);
+    }
+
+    void AddNewBody()
+    {
+        var me = PhotonNetwork.Instantiate(playerBodyPrefab.name, new Vector3(0, 0.505f, 0), Quaternion.identity);
+        if (me == null) throw new NullReferenceException();
+        myBodies.Add(me);
+
+        var controller = InitializeBodyGameObject(me);
+
+        currentBodyIdx = -1;
+        SetCurrentBodyIdx(myBodies.Count - 1);
     }
 
     BodyController InitializeBodyGameObject(GameObject body)
@@ -111,9 +147,44 @@ public class GameManager : MonoBehaviourPunCallbacks, IPunObservable
         var controller = body.GetComponent<BodyController>();
         controller.BodyReleased += Controller_BodyReleased;
         controller.FoodEaten += Controller_FoodEaten;
+        controller.PlayerEaten += Controller_PlayerEaten;
         controller.BodySplitRequested += Controller_BodySplitRequested;
         controller.BodyGatherRequested += Controller_BodyGatherRequested;
+        controller.BodyDestroyRequested += Controller_BodyDestroyRequested;
         return controller;
+    }
+
+    private void Controller_PlayerEaten(object sender, float e)
+    {
+        SetScore(score + e * 200);
+    }
+
+    void Controller_BodyDestroyRequested(object sender, EventArgs e)
+    {
+        var caller = (BodyController)sender;
+        if(caller.photonView.IsMine)
+        {
+            for (int i = 0; i < myBodies.Count; i++) 
+            {
+                if(myBodies[i].GetInstanceID() == caller.gameObject.GetInstanceID())
+                {
+                    myBodies.RemoveAt(i);
+                    currentBodyIdx = Math.Min(myBodies.Count-1, currentBodyIdx);
+                    break;
+                }
+            }
+            PhotonNetwork.Destroy(caller.photonView);
+
+            if (myBodies.Count == 0)
+            {
+                //You dead!
+                Debug.Log("You dead!");
+                SetScore(0);
+
+                //Just make new body
+                AddNewBody();
+            }
+        }
     }
 
     //Following controller event calls only from local object.
@@ -197,30 +268,6 @@ public class GameManager : MonoBehaviourPunCallbacks, IPunObservable
                     foodCount -= 1;
                     PhotonNetwork.Destroy(newFood.GetComponent<PhotonView>());
                 };
-            }
-        }
-    }
-
-    public void SetScore(float score)
-    {
-        if (this.score != score) 
-        {
-            this.score = score;
-            if(scoreTextboxObject) this.scoreTextboxObject.GetComponent<UnityEngine.UI.Text>().text = $"Score: {(int)score}";
-        }
-    }
-
-    public void SetCurrentBodyIdx(int idx)
-    {
-        if (currentBodyIdx != idx)
-        {
-            currentBodyIdx = idx;
-
-            if (idx >= 0 && idx < myBodies.Count)
-            {
-                var cameraWork = GetComponent<CameraFollowing>();
-                cameraWork.targetObject = myBodies[idx];
-                cameraWork.activeSmoothing = true;
             }
         }
     }

@@ -27,9 +27,9 @@ public class BodyController : MonoBehaviourPunCallbacks, IPunObservable
     public GameObject arrorCenterGameObject;
     public GameObject nicknameTextGameObject;
 
-    public float accelPerSec = 800;
-    public float rotatePerSec = 100;
-    public float maxAccel = 2000;
+    public float accelPerSec = 1800;
+    public float rotatePerSec = 250;
+    public float maxAccel = 4000;
 
     public float accel = 0;
     public float direction = 0;
@@ -37,13 +37,48 @@ public class BodyController : MonoBehaviourPunCallbacks, IPunObservable
     public float health = 1.0f;
     public float size = 1.0f;
     public float splitableHealthThreshold = 2.0f;
+    public float eatOtherThresholdFactor = 1.66f;
 
-    public event EventHandler BodyReleased;
     public event EventHandler<BodySplitEventArgs> BodySplitRequested;
     public event EventHandler BodyGatherRequested;
+    public event EventHandler BodyDestroyRequested;
+
+    public event EventHandler BodyReleased;
+
     public event EventHandler<float> FoodEaten;
+    public event EventHandler<float> PlayerEaten;
 
     float blockSplitBodyTimer = 0.0f;
+    float blockEatOtherTimer = 0.0f;
+
+    public bool GetFocus() { return focused; }
+
+    public void SetFocus(bool focused = true)
+    {
+        this.focused = focused;
+
+        if (focused)
+        {
+            this.arrorCenterGameObject.SetActive(true);
+            //this.direction = 0;
+            this.accel = 0;
+            arrorCenterGameObject.transform.localScale = new Vector3(1, 1, 1);
+        }
+        else
+        {
+            this.arrorCenterGameObject.SetActive(false);
+        }
+    }
+
+    public void SetHealth(float health)
+    {
+        this.health = health;
+
+        size = Mathf.Pow(Math.Max(0, this.health), 0.333333f);
+
+        transform.localScale = new Vector3(size, size, size);
+        this.gameObject.GetComponent<Rigidbody>().mass = size;
+    }
 
     // Start is called before the first frame update
     void Start()
@@ -117,6 +152,8 @@ public class BodyController : MonoBehaviourPunCallbacks, IPunObservable
         }
 
         blockSplitBodyTimer -= Time.deltaTime;
+
+        blockEatOtherTimer -= Time.deltaTime;
     }
 
     void OnTriggerEnter(Collider col)
@@ -131,33 +168,42 @@ public class BodyController : MonoBehaviourPunCallbacks, IPunObservable
         }
     }
 
-    public bool GetFocus() { return focused; }
-
-    public void SetFocus(bool focused = true)
+    void OnCollisionStay(Collision col)
     {
-        this.focused = focused;
+        var other = col.gameObject;
+        if(other.tag == "Player")
+        {
+            var photonView = other.GetComponent<PhotonView>();
+            if (!photonView.IsMine)
+            {
+                var controller = other.GetComponent<BodyController>();
+                var otherHealth = controller.health;
 
-        if (focused)
-        {
-            this.arrorCenterGameObject.SetActive(true);
-            //this.direction = 0;
-            this.accel = 0;
-            arrorCenterGameObject.transform.localScale = new Vector3(1, 1, 1);
-        }
-        else
-        {
-            this.arrorCenterGameObject.SetActive(false);
+                if (health > otherHealth * eatOtherThresholdFactor && blockEatOtherTimer < 0)
+                {
+                    //perform eat other
+                    Debug.Log($"RPC: Send request to {photonView.Owner.NickName}");
+                    photonView.RPC("RPCRemoveRequest", RpcTarget.All, this.photonView.Owner.NickName);
+
+                    SetHealth(health + otherHealth);
+                    PlayerEaten?.Invoke(this, otherHealth);
+
+                    //block eat other for 0.5 sec
+                    blockEatOtherTimer = 0.5f;
+                }
+            }
         }
     }
 
-    public void SetHealth(float health)
+    [PunRPC]
+    void RPCRemoveRequest(string caller)
     {
-        this.health = health;
-
-        size = Mathf.Pow(Math.Max(0, this.health), 0.333333f);
-
-        transform.localScale = new Vector3(size, size, size);
-        this.gameObject.GetComponent<Rigidbody>().mass = size;
+        //requested
+        if (photonView.IsMine)
+        {
+            Debug.Log($"RPC: Remove requested. called by {caller}");
+            BodyDestroyRequested?.Invoke(this, null);
+        }
     }
 
     public void OnPhotonSerializeView(PhotonStream stream, PhotonMessageInfo info)

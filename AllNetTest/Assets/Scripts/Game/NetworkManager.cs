@@ -25,7 +25,12 @@ public class NetworkManager : MonoBehaviourPunCallbacks
 
     public void Connect()
     {
-        var names = new[] { "AinL", "boerk", "Hello", "World", "Wow", "Test", "HelloWorld", "Joe", "Foo", "Bar", "foobar", "ASCII"};
+        var names = new[] { 
+            "Josep", "Visual", "Hello", "World", "Wonder", "Studio", "Android", "Joe", 
+            "Foo", "Bar", "foobar", "Sony", "Microsoft", "Windows", "Apple", "Dog", 
+            "Cat", "Frog", "White", "Black", "Pick", "Slime", "Robot", "Haje", "Vaccine",
+            "Steam", "Train", "Car", "Cart", "Elephant", "Flower", "Seed", "Food"
+        };
         PhotonNetwork.NickName = names[UnityEngine.Random.Range(0, names.Length)];
         if (PhotonNetwork.IsConnected)
         {

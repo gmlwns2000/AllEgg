@@ -6,6 +6,7 @@ public class CameraFollowing : MonoBehaviour
 {
     public GameObject targetObject;
     public GameObject cameraObject;
+
     public bool activeSmoothing = false;
 
     // Start is called before the first frame update
