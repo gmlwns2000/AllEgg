@@ -885,7 +885,9 @@ MonoBehaviour:
 
     1. Hello
 
-    2. World'
+    2. World
+
+    3. !!!'
 --- !u!222 &1346965203
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -1077,6 +1079,7 @@ MonoBehaviour:
   m_CaretBlinkRate: 0.85
   m_CaretWidth: 1
   m_ReadOnly: 0
+  m_ShouldActivateOnSelect: 1
 --- !u!114 &1807337569
 MonoBehaviour:
   m_ObjectHideFlags: 0
