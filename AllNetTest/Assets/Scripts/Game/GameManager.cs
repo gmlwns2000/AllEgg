@@ -77,10 +77,10 @@ public class GameManager : MonoBehaviourPunCallbacks, IPunObservable
     public List<GameObject> myBodies;
     public int currentBodyIdx = 0;
 
-    public GameObject scoreTextboxObject;
-
     public GameObject playerBodyPrefab;
     public GameObject foodPrefab;
+    public GameObject cameraObject;
+    public GameObject scoreTextboxObject;
 
     public float foodCreateInterval = 0.5f;
     public int maxFoodCount = 1000;
@@ -117,6 +117,11 @@ public class GameManager : MonoBehaviourPunCallbacks, IPunObservable
 
     void Start()
     {
+
+
+        var cameraWork = GetComponent<CameraFollowing>();
+        cameraWork.cameraObject = cameraObject;
+
         if (photonView.IsMine)
         {
             AddNewBody();

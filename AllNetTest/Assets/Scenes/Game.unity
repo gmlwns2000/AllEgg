@@ -216,6 +216,90 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 50, y: -30, z: 0}
+--- !u!1001 &467614575
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: 532843922490911682, guid: cf0831828c9e1a74db538605b9dbbfd9,
+        type: 3}
+      propertyPath: cameraObject
+      value: 
+      objectReference: {fileID: 534669902}
+    - target: {fileID: 532843922490911682, guid: cf0831828c9e1a74db538605b9dbbfd9,
+        type: 3}
+      propertyPath: scoreTextboxObject
+      value: 
+      objectReference: {fileID: 1005848150}
+    - target: {fileID: 4942750201537402926, guid: cf0831828c9e1a74db538605b9dbbfd9,
+        type: 3}
+      propertyPath: sceneViewId
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 7436222405448426521, guid: cf0831828c9e1a74db538605b9dbbfd9,
+        type: 3}
+      propertyPath: m_RootOrder
+      value: 5
+      objectReference: {fileID: 0}
+    - target: {fileID: 7436222405448426521, guid: cf0831828c9e1a74db538605b9dbbfd9,
+        type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7436222405448426521, guid: cf0831828c9e1a74db538605b9dbbfd9,
+        type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7436222405448426521, guid: cf0831828c9e1a74db538605b9dbbfd9,
+        type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7436222405448426521, guid: cf0831828c9e1a74db538605b9dbbfd9,
+        type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 7436222405448426521, guid: cf0831828c9e1a74db538605b9dbbfd9,
+        type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7436222405448426521, guid: cf0831828c9e1a74db538605b9dbbfd9,
+        type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7436222405448426521, guid: cf0831828c9e1a74db538605b9dbbfd9,
+        type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7436222405448426521, guid: cf0831828c9e1a74db538605b9dbbfd9,
+        type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7436222405448426521, guid: cf0831828c9e1a74db538605b9dbbfd9,
+        type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7436222405448426521, guid: cf0831828c9e1a74db538605b9dbbfd9,
+        type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7970457776050004569, guid: cf0831828c9e1a74db538605b9dbbfd9,
+        type: 3}
+      propertyPath: m_Name
+      value: Player
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: cf0831828c9e1a74db538605b9dbbfd9, type: 3}
 --- !u!1 &534669902
 GameObject:
   m_ObjectHideFlags: 0
@@ -312,11 +396,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0ae32fece92d08f4a9db9b472878993c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  cameraObject: {fileID: 534669902}
-  scoreTextboxObject: {fileID: 1005848150}
-  playerPrefab: {fileID: 7970457776050004569, guid: cf0831828c9e1a74db538605b9dbbfd9,
-    type: 3}
-  alwaysCreateRoom: 0
 --- !u!850595691 &714731879
 LightingSettings:
   m_ObjectHideFlags: 0
@@ -491,7 +570,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 0}
-  m_AnchoredPosition: {x: -11.399994, y: 0}
+  m_AnchoredPosition: {x: -11.400024, y: 0}
   m_SizeDelta: {x: -22.799988, y: 65.6}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1005848152
